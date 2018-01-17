@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: Salvian Reynaldi
+  description: Do blue-green launch-configuration deployment (a.k.a. rolling updates)
+  company: 
+  license: MIT
+  min_ansible_version: 2.0
+  platforms:
+  - name: Ubuntu
+    versions:
+     - trusty
+  categories:
+  - system
+  - deployment
+  - aws
+dependencies: []
