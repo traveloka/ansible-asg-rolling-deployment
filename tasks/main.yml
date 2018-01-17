@@ -1,0 +1,98 @@
+- name: assume the deployment aws role
+  sts_assume_role:
+    region: "{{ aws_region }}"
+    role_arn: "{{ aws_role_arn }}"
+    role_session_name: "{{ aws_role_session_name }}"
+  register: assumed_role
+
+- name: find new ami
+  ec2_ami_find:
+    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+    security_token: "{{ assumed_role.sts_creds.session_token }}"
+    region: "{{ aws_region }}"
+    ami_id: "{{ new_ami_id }}"
+    name: "{{ new_ami_name_filter }}"
+    virtualization_type: "hvm"
+    owner: self
+    no_result_action: fail
+  register: new_ami
+
+- name: get AMI metadata
+  set_fact:
+    service_name: "{{ new_ami.results[0].tags.Service }}"
+    new_service_version: "{{ new_ami.results[0].tags.ServiceVersion }}"
+    product_domain: "{{ new_ami.results[0].tags.ProductDomain }}"
+
+# this is needed because 'update asg' need setting the desired capacity
+- name: find the asg
+  ec2_asg:
+    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+    security_token: "{{ assumed_role.sts_creds.session_token }}"
+    region: "{{ aws_region }}"
+    name: "{{ asg_name }}"
+    max_size: "{{ asg_max_size }}"
+    min_size: "{{ asg_min_size }}"
+  register: old_asg
+
+- name: set launch configurations name
+  set_fact:
+    old_lc_name: "{{ old_asg.launch_config_name }}"
+    new_lc_name: "{{ app_name }}-app-{{ new_service_version }}-{{ infra_environment }}"
+
+- name: create new launch config
+  ec2_lc:
+    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+    security_token: "{{ assumed_role.sts_creds.session_token }}"
+    region: "{{ aws_region }}"
+    name: "{{ new_lc_name }}"
+    image_id: "{{ new_ami.results[0].ami_id }}"
+    instance_type: "{{ instance_type }}"
+    instance_profile_name: "{{ instance_profile }}"
+    security_groups: "{{ instance_sgs }}"
+    user_data: "{{ lc_user_data | default(omit) }}"
+    instance_monitoring: "{{ instance_monitoring }}"
+    ebs_optimized: "{{ instance_ebs_optimized }}"
+
+- name: update asg
+  ec2_asg:
+    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+    security_token: "{{ assumed_role.sts_creds.session_token }}"
+    region: "{{ aws_region }}"
+    name: "{{ asg_name }}"
+    launch_config_name: "{{ new_lc_name }}"
+    max_size: "{{ asg_max_size }}"
+    min_size: "{{ asg_min_size }}"
+    desired_capacity: "{{ old_asg.desired_capacity | default(asg_desired_capacity) }}"
+    replace_all_instances: yes
+    health_check_period: "{{ asg_health_check_period }}"
+    health_check_type: "{{ asg_health_check_type }}"
+    target_group_arns: "{{ asg_target_group_arns }}"
+    vpc_zone_identifier: "{{ asg_vpc_zone_identifier }}"
+    tags:
+      - Name: "{{ new_lc_name }}"
+      - Service: "{{ service_name }}"
+      - Cluster: "{{ service_name }}-app"
+      - ServiceVersion: "{{ new_service_version }}"
+      - Application: "{{ new_ami.results[0].tags.Application }}"
+      - Description: "This instance is running the {{ service_name }} service"
+      - Environment: "{{ infra_environment }}"
+      - AmiId: "{{ new_ami.results[0].ami_id }}"
+      - SourceAmiId: "{{ new_ami.results[0].tags.SourceAmi }}"
+      - AppBuildTime: "{{ new_ami.results[0].tags.AppBuildTime }}"
+      - AmiBakeTime: "{{ new_ami.results[0].tags.AmiBakeTime }}"
+      - ProductDomain: "{{ product_domain }}"
+    wait_timeout: "{{ asg_wait_timeout }}"
+
+- name: delete old launch config
+  ec2_lc:
+    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+    security_token: "{{ assumed_role.sts_creds.session_token }}"
+    region: "{{ aws_region }}"
+    name: "{{ old_lc_name }}"
+    state: absent
+  when: old_lc_name != new_lc_name
