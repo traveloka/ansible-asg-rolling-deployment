@@ -32,8 +32,6 @@
     security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
     name: "{{ asg_name }}"
-    max_size: "{{ asg_max_size }}"
-    min_size: "{{ asg_min_size }}"
   register: old_asg
 
 - name: set launch configurations name
