@@ -79,7 +79,7 @@
       - Description: "This instance is running the {{ service_name }} service"
       - Environment: "{{ infra_environment }}"
       - AmiId: "{{ new_ami.results[0].ami_id }}"
-      - SourceAmiId: "{{ new_ami.results[0].tags.SourceAmi }}"
+      - BaseAmiId: "{{ new_ami.results[0].tags.BaseAmiId }}"
       - AppBuildTime: "{{ new_ami.results[0].tags.AppBuildTime }}"
       - AmiBakeTime: "{{ new_ami.results[0].tags.AmiBakeTime }}"
       - ProductDomain: "{{ product_domain }}"
