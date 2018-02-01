@@ -49,6 +49,7 @@
     image_id: "{{ new_ami.results[0].ami_id }}"
     instance_type: "{{ instance_type }}"
     instance_profile_name: "{{ instance_profile }}"
+    key_name: "{{ instance_key_name | default (omit) }}"
     security_groups: "{{ instance_sgs }}"
     user_data: "{{ lc_user_data | default(omit) }}"
     instance_monitoring: "{{ instance_monitoring }}"
