@@ -52,8 +52,8 @@
     key_name: "{{ instance_key_name | default (omit) }}"
     security_groups: "{{ instance_sgs }}"
     user_data: "{{ lc_user_data | default(omit) }}"
-    instance_monitoring: "{{ instance_monitoring }}"
-    ebs_optimized: "{{ instance_ebs_optimized }}"
+    instance_monitoring: "{{ instance_monitoring | default (omit) }}"
+    ebs_optimized: "{{ instance_ebs_optimized | default (omit) }}"
 
 - name: update asg
   ec2_asg:
