@@ -37,7 +37,7 @@
 - name: set launch configurations name
   set_fact:
     old_lc_name: "{{ old_asg.launch_config_name }}"
-    new_lc_name: "{{ app_name }}-app-{{ new_service_version }}-{{ infra_environment }}"
+    new_lc_name: "{{ app_name }}-app-{{ new_service_version }}-{{ infra_environment }}-ansible"
 
 - name: create new launch config
   ec2_lc:
@@ -86,6 +86,10 @@
       - ProductDomain: "{{ product_domain }}"
     wait_timeout: "{{ asg_wait_timeout }}"
 
+- debug:
+    msg: "{{ old_lc_name | search('-ansible$') }}"
+    verbosity: 2
+
 - name: delete old launch config
   ec2_lc:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
@@ -94,4 +98,6 @@
     region: "{{ aws_region }}"
     name: "{{ old_lc_name }}"
     state: absent
-  when: old_lc_name != new_lc_name
+  when:
+    - old_lc_name != new_lc_name
+    - old_lc_name | search("-ansible$")
