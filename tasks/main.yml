@@ -14,7 +14,7 @@
     ami_id: "{{ new_ami_id }}"
     name: "{{ new_ami_name_filter }}"
     virtualization_type: "hvm"
-    owner: self
+    owner: "{{ new_ami_owner }}"
     no_result_action: fail
   register: new_ami
 

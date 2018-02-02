@@ -3,3 +3,4 @@ instance_key_name: ""
 instance_user_data: ""
 instance_detailed_monitoring: false
 instance_ebs_optimized: false
+new_ami_owner: self
