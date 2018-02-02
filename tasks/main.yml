@@ -63,7 +63,9 @@
     region: "{{ aws_region }}"
     name: "{{ asg_name }}"
     launch_config_name: "{{ new_lc_name }}"
-    desired_capacity: "{{ old_asg.desired_capacity }}"
+    max_size: "{{ asg_max_size | default(old_asg.max_size) }}"
+    min_size: "{{ asg_min_size | default(old_asg.min_size) }}"
+    desired_capacity: "{{ asg_desired_capacity | default(old_asg.desired_capacity) }}"
     replace_all_instances: yes
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
     health_check_period: "{{ asg_health_check_period }}"
