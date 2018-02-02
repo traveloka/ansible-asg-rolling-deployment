@@ -52,7 +52,7 @@
     key_name: "{{ instance_key_name }}"
     security_groups: "{{ instance_sgs }}"
     user_data: "{{ instance_user_data }}"
-    instance_monitoring: "{{ instance_monitoring }}"
+    instance_monitoring: "{{ instance_detailed_monitoring }}"
     ebs_optimized: "{{ instance_ebs_optimized }}"
 
 - name: update asg
@@ -63,13 +63,15 @@
     region: "{{ aws_region }}"
     name: "{{ asg_name }}"
     launch_config_name: "{{ new_lc_name }}"
-    max_size: "{{ asg_max_size }}"
-    min_size: "{{ asg_min_size }}"
-    desired_capacity: "{{ old_asg.desired_capacity | default(asg_desired_capacity) }}"
+    max_size: "{{ asg_max_size | default(omit) }}"
+    min_size: "{{ asg_min_size | default(omit) }}"
+    desired_capacity: "{{ asg_desired_capacity | default(omit) }}"
     replace_all_instances: yes
+    replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
     health_check_period: "{{ asg_health_check_period }}"
     health_check_type: "{{ asg_health_check_type }}"
-    target_group_arns: "{{ asg_target_group_arns }}"
+    load_balancers: "{{ asg_load_balancers | default(omit) }}"
+    target_group_arns: "{{ asg_target_group_arns | default(omit) }}"
     vpc_zone_identifier: "{{ asg_vpc_zone_identifier }}"
     tags:
       - Name: "{{ new_lc_name }}"
