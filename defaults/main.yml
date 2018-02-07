@@ -4,3 +4,5 @@ instance_user_data: ""
 instance_detailed_monitoring: false
 instance_ebs_optimized: false
 new_ami_owner: self
+new_launch_config_name_suffix: ansible
+old_launch_config_name_suffix: ansible
