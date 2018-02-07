@@ -89,7 +89,7 @@
     wait_timeout: "{{ asg_wait_timeout }}"
 
 - debug:
-    var: old_lc_name | search("-{{ old_launch_config_name_suffix }}$")
+    msg: "{{ old_lc_name | search('-{{ old_launch_config_name_suffix }}$') }}"
     verbosity: 2
 
 - name: delete old launch config
