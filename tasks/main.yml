@@ -49,9 +49,9 @@
     image_id: "{{ new_ami.results[0].ami_id }}"
     instance_type: "{{ instance_type }}"
     instance_profile_name: "{{ instance_profile }}"
-    key_name: "{{ instance_key_name }}"
+    key_name: "{{ instance_key_name | default(omit) }}"
     security_groups: "{{ instance_sgs }}"
-    user_data: "{{ instance_user_data }}"
+    user_data: "{{ instance_user_data | default(omit) }}"
     instance_monitoring: "{{ instance_detailed_monitoring }}"
     ebs_optimized: "{{ instance_ebs_optimized }}"
 
