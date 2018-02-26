@@ -83,8 +83,6 @@
       - Environment: "{{ infra_environment }}"
       - AmiId: "{{ new_ami.results[0].ami_id }}"
       - BaseAmiId: "{{ new_ami.results[0].tags.BaseAmiId }}"
-      - AppBuildTime: "{{ new_ami.results[0].tags.AppBuildTime }}"
-      - AmiBakeTime: "{{ new_ami.results[0].tags.AmiBakeTime }}"
       - ProductDomain: "{{ product_domain }}"
     wait_timeout: "{{ asg_wait_timeout }}"
 
