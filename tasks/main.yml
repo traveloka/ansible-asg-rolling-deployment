@@ -1,8 +1,9 @@
+---
 - name: assume the deployment aws role
   sts_assume_role:
     region: "{{ aws_region }}"
     role_arn: "{{ aws_role_arn }}"
-    role_session_name: "{{ aws_role_session_name }}"
+    role_session_name: "{{ aws_role_session_name | default(ansible_user_id + '@' + ansible_product_serial) }}"
   register: assumed_role
 
 - name: find new ami

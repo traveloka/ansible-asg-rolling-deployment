@@ -1,4 +1,3 @@
-aws_role_session_name: ansible
 instance_detailed_monitoring: false
 instance_ebs_optimized: false
 new_ami_owner: self
