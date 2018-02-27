@@ -3,7 +3,7 @@
 Update an AWS auto scaling group
 
 ## Requirements
- -  [ec2_ami_find](http://docs.ansible.com/ansible/latest/ec2_ami_find_module.html#requirements-on-host-that-executes-module)
+ - [ec2_ami_find](http://docs.ansible.com/ansible/latest/ec2_ami_find_module.html#requirements-on-host-that-executes-module)
  - [ec2_lc](http://docs.ansible.com/ansible/latest/ec2_lc_module.html#requirements-on-host-that-executes-module)
  - [ec2_asg](http://docs.ansible.com/ansible/latest/ec2_asg_module.html#requirements-on-host-that-executes-module)
 
