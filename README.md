@@ -18,6 +18,15 @@ Update an AWS auto scaling group
 
  - The AWS EC2 ASG is already provisioned
 
+## Convention
+
+ - The AWS EC2 AMI must have these tags:
+   - Service
+   - ServiceVersion
+   - ProductDomain
+   - Application
+   - BaseAmiId
+
 ## Example Playbook
 
 ```
