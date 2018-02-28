@@ -3,7 +3,7 @@
   sts_assume_role:
     region: "{{ aws_region }}"
     role_arn: "{{ aws_role_arn }}"
-    role_session_name: "{{ aws_role_session_name | default(lookup('env', 'USER') + '@' + ansible_product_serial) }}"
+    role_session_name: "{{ aws_role_session_name | default(lookup('env', 'USER') + '@' + ansible_product_name + '.' + ansible_product_serial) | regex_replace('[^\\w+=,.@-]', '-')}}"
   register: assumed_role
 
 - name: find new ami
