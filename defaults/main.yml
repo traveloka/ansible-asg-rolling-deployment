@@ -3,3 +3,5 @@ instance_ebs_optimized: false
 new_ami_owner: self
 new_launch_config_name_suffix: ansible
 old_launch_config_name_suffix: ansible
+asg_health_check_type: ELB
+asg_health_check_period: 300
