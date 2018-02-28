@@ -38,7 +38,7 @@
 - name: set launch configurations name
   set_fact:
     old_lc_name: "{{ old_asg.launch_config_name }}"
-    new_lc_name: "{{ app_name }}-app-{{ new_service_version }}-{{ infra_environment }}-{{ new_launch_config_name_suffix }}"
+    new_lc_name: "{{ service_name }}-app-{{ new_service_version }}-{{ infra_environment }}-{{ new_launch_config_name_suffix }}"
 
 - name: create new launch config
   ec2_lc:
