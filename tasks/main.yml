@@ -69,11 +69,11 @@
     desired_capacity: "{{ asg_desired_capacity | default(old_asg.desired_capacity) }}"
     replace_all_instances: yes
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
-    health_check_period: "{{ asg_health_check_period }}"
-    health_check_type: "{{ asg_health_check_type }}"
+    health_check_period: "{{ asg_health_check_period | default(omit) }}"
+    health_check_type: "{{ asg_health_check_type | default(omit) }}"
     load_balancers: "{{ asg_load_balancers | default(omit) }}"
     target_group_arns: "{{ asg_target_group_arns | default(omit) }}"
-    vpc_zone_identifier: "{{ asg_vpc_zone_identifier }}"
+    vpc_zone_identifier: "{{ asg_vpc_zone_identifier | default(omit) }}"
     tags:
       - Name: "{{ new_lc_name }}"
       - Service: "{{ service_name }}"
