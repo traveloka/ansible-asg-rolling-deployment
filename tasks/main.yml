@@ -101,4 +101,4 @@
     state: absent
   when:
     - old_lc_name != new_lc_name
-    - old_lc_name | search("-{{ old_launch_config_name_suffix }}$")
+    - old_lc_name | search("-" + old_launch_config_name_suffix + "$")
