@@ -19,7 +19,7 @@
     no_result_action: fail
   register: new_ami
 
-- name: get AMI metadata
+# - name: get AMI metadata
   # set_fact:
   #   service_name: "{{ new_ami.results[0].tags.Service }}"
   #   new_service_version: "{{ new_ami.results[0].tags.ServiceVersion }}"
