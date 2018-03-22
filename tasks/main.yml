@@ -20,10 +20,10 @@
   register: new_ami
 
 - name: get AMI metadata
-  set_fact:
-    service_name: "{{ new_ami.results[0].tags.Service }}"
-    new_service_version: "{{ new_ami.results[0].tags.ServiceVersion }}"
-    product_domain: "{{ new_ami.results[0].tags.ProductDomain }}"
+  # set_fact:
+  #   service_name: "{{ new_ami.results[0].tags.Service }}"
+  #   new_service_version: "{{ new_ami.results[0].tags.ServiceVersion }}"
+  #   product_domain: "{{ new_ami.results[0].tags.ProductDomain }}"
 
 # this is needed because 'update asg' need setting the desired capacity
 - name: find the asg
@@ -74,17 +74,17 @@
     load_balancers: "{{ asg_load_balancers | default(omit) }}"
     target_group_arns: "{{ asg_target_group_arns | default(omit) }}"
     vpc_zone_identifier: "{{ asg_vpc_zone_identifier | default(omit) }}"
-    tags:
-      - Name: "{{ new_lc_name }}"
-      - Service: "{{ service_name }}"
-      - Cluster: "{{ service_name }}-app"
-      - ServiceVersion: "{{ new_service_version }}"
-      - Application: "{{ new_ami.results[0].tags.Application }}"
-      - Description: "This instance is running the {{ service_name }} service"
-      - Environment: "{{ infra_environment }}"
-      - AmiId: "{{ new_ami.results[0].ami_id }}"
-      - BaseAmiId: "{{ new_ami.results[0].tags.BaseAmiId }}"
-      - ProductDomain: "{{ product_domain }}"
+    # tags:
+    #   - Name: "{{ new_lc_name }}"
+    #   - Service: "{{ service_name }}"
+    #   - Cluster: "{{ service_name }}-app"
+    #   - ServiceVersion: "{{ new_service_version }}"
+    #   - Application: "{{ tags.Application }}"
+    #   - Description: "This instance is running the {{ service_name }} service"
+    #   - Environment: "{{ infra_environment }}"
+    #   - AmiId: "{{ new_ami.results[0].ami_id }}"
+    #   - BaseAmiId: "{{ tags.BaseAmiId }}"
+    #   - ProductDomain: "{{ product_domain }}"
     wait_timeout: "{{ asg_wait_timeout }}"
 
 - debug:
