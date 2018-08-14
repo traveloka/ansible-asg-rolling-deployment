@@ -3,31 +3,31 @@
   sts_assume_role:
     region: "{{ aws_region }}"
     role_arn: "{{ aws_role_arn }}"
+    mfa_serial_number: "{{ aws_mfa_serial | default(omit) }}"
+    mfa_token: "{{ aws_mfa_token | default(omit) }}"
     role_session_name: "{{ aws_role_session_name | default(lookup('env', 'USER') + '@' + ansible_product_name + '.' + ansible_product_serial) | regex_replace('[^\\w+=,.@-]', '-')}}"
   register: assumed_role
 
 - name: find new ami
-  ec2_ami_find:
+  ec2_ami_facts:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
     security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
-    ami_id: "{{ new_ami_id }}"
-    name: "{{ new_ami_name_filter }}"
-    virtualization_type: "hvm"
+    image_id: "{{ new_ami_id }}"
+    filters:
+      name: "{{ new_ami_name_filter }}"
+      virtualization-type: "hvm"
     owner: "{{ new_ami_owner }}"
-    no_result_action: fail
   register: new_ami
 
-# - name: get AMI metadata
-  # set_fact:
-  #   service_name: "{{ new_ami.results[0].tags.Service }}"
-  #   new_service_version: "{{ new_ami.results[0].tags.ServiceVersion }}"
-  #   product_domain: "{{ new_ami.results[0].tags.ProductDomain }}"
+- name: "error when finding ami"
+  fail:
+    msg: "Got {{ new_ami.images|length }} ami, expected 1. Please check `new_ami_id` and `new_ami_name_filter` parameters."
+  when: new_ami.images|length != 1
 
-# this is needed because 'update asg' need setting the desired capacity
 - name: find the asg
-  ec2_asg:
+  ec2_asg_facts:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
     security_token: "{{ assumed_role.sts_creds.session_token }}"
@@ -35,10 +35,29 @@
     name: "{{ asg_name }}"
   register: old_asg
 
+- name: "error when finding asg"
+  fail:
+    msg: "Got {{ old_asg.results|length }} asg, expected 1. Please check `asg_name` parameter."
+  when: old_asg.results|length != 1
+
 - name: set launch configurations name
   set_fact:
-    old_lc_name: "{{ old_asg.launch_config_name }}"
+    old_lc_name: "{{ old_asg.results[0].launch_configuration_name }}"
     new_lc_name: "{{ service_name }}-app-{{ new_service_version }}-{{ infra_environment }}-{{ new_launch_config_name_suffix }}"
+
+- name: find old lc
+  ec2_lc_facts:
+    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
+    security_token: "{{ assumed_role.sts_creds.session_token }}"
+    region: "{{ aws_region }}"
+    name: "{{ old_lc_name }}"
+  register: old_lc
+
+- name: "error when finding old lc"
+  fail:
+    msg: "Got {{ old_lc.launch_configurations|length }} lc, expected 1."
+  when: old_lc.launch_configurations|length != 1
 
 - name: create new launch config
   ec2_lc:
@@ -47,14 +66,19 @@
     security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
     name: "{{ new_lc_name }}"
-    image_id: "{{ new_ami.results[0].ami_id }}"
-    instance_type: "{{ instance_type }}"
-    instance_profile_name: "{{ instance_profile }}"
-    key_name: "{{ instance_key_name | default(omit) }}"
-    security_groups: "{{ instance_sgs }}"
-    user_data: "{{ instance_user_data | default(omit) }}"
-    instance_monitoring: "{{ instance_detailed_monitoring }}"
-    ebs_optimized: "{{ instance_ebs_optimized }}"
+    image_id: "{{ new_ami.images[0].image_id }}"
+    instance_type: "{{ instance_type | default(old_lc.launch_configurations[0].instance_type) }}"
+    instance_profile_name: "{{ old_lc.launch_configurations[0].iam_instance_profile }}"
+    key_name: "{{ old_lc.launch_configurations[0].key_name }}"
+    security_groups: "{{ old_lc.launch_configurations[0].security_groups }}"
+    user_data: "{{ instance_user_data }}"
+    instance_monitoring: "{{ old_lc.launch_configurations[0].instance_monitoring.enabled }}"
+    ebs_optimized: "{{ old_lc.launch_configurations[0].ebs_optimized }}"
+    volumes:
+    - device_name: "{{ ebs_device_name }}"
+      volume_size: "{{ ebs_volume_size }}"
+      volume_type: "{{ ebs_volume_type }}"
+      delete_on_termination: "{{ ebs_delete_on_termination }}"
 
 - name: update asg
   ec2_asg:
@@ -64,32 +88,14 @@
     region: "{{ aws_region }}"
     name: "{{ asg_name }}"
     launch_config_name: "{{ new_lc_name }}"
-    max_size: "{{ asg_max_size | default(old_asg.max_size) }}"
-    min_size: "{{ asg_min_size | default(old_asg.min_size) }}"
-    desired_capacity: "{{ asg_desired_capacity | default(old_asg.desired_capacity) }}"
+    max_size: "{{ asg_max_size | default(old_asg.results[0].max_size) }}"
+    min_size: "{{ asg_min_size | default(old_asg.results[0].min_size) }}"
+    desired_capacity: "{{ asg_desired_capacity | default(old_asg.results[0].desired_capacity) }}"
     replace_all_instances: yes
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
-    health_check_period: "{{ asg_health_check_period | default(omit) }}"
-    health_check_type: "{{ asg_health_check_type | default(omit) }}"
-    load_balancers: "{{ asg_load_balancers | default(omit) }}"
-    target_group_arns: "{{ asg_target_group_arns | default(omit) }}"
-    vpc_zone_identifier: "{{ asg_vpc_zone_identifier | default(omit) }}"
-    # tags:
-    #   - Name: "{{ new_lc_name }}"
-    #   - Service: "{{ service_name }}"
-    #   - Cluster: "{{ service_name }}-app"
-    #   - ServiceVersion: "{{ new_service_version }}"
-    #   - Application: "{{ tags.Application }}"
-    #   - Description: "This instance is running the {{ service_name }} service"
-    #   - Environment: "{{ infra_environment }}"
-    #   - AmiId: "{{ new_ami.results[0].ami_id }}"
-    #   - BaseAmiId: "{{ tags.BaseAmiId }}"
-    #   - ProductDomain: "{{ product_domain }}"
+    health_check_period: "{{ asg_health_check_period | default(old_asg.results[0].health_check_period) }}"
+    health_check_type: "{{ asg_health_check_type | default(old_asg.results[0].health_check_type) }}"
     wait_timeout: "{{ asg_wait_timeout }}"
-
-- debug:
-    msg: "{{ old_lc_name | search('-{{ old_launch_config_name_suffix }}$') }}"
-    verbosity: 2
 
 - name: delete old launch config
   ec2_lc:
