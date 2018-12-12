@@ -2,6 +2,7 @@
 tested_ansible_version: "2.7.4"
 asg_default_cooldown: 30
 asg_wait_timeout: 3600
+asg_wait_for_instances: true
 ebs_device_name: /dev/sda1
 ebs_volume_size: 8
 ebs_volume_type: gp2

@@ -110,8 +110,9 @@
     desired_capacity: "{{ asg_desired_capacity | default(asg.results[0].desired_capacity) }}"
     health_check_type: "{{ asg_health_check_type | default(asg.results[0].health_check_type) }}"
     health_check_period: "{{ asg_health_check_grace_period | default(asg.results[0].health_check_grace_period) }}"
-    replace_all_instances: yes
+    replace_all_instances: true
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
+    wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
 
 - name: Delete the Old Launch Configuration
