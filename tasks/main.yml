@@ -102,6 +102,7 @@
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
     security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
+    default_cooldown: "{{ asg_default_cooldown }}"
     name: "{{ asg_name }}"
     launch_config_name: "{{ new_lc_name }}"
     max_size: "{{ asg_max_size | default(asg.results[0].max_size) }}"
