@@ -1,5 +1,5 @@
 ---
-asg_default_cooldown: 30
+asg_default_cooldown: 300
 asg_wait_timeout: 3600
 asg_wait_for_instances: true
 ebs_device_name: /dev/sda1
