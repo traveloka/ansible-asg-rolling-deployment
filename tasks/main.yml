@@ -1,8 +1,8 @@
 ---
 - name: Check Ansible Version
   fail:
-    msg: "Ansible version detected is {{ ansible_version.full }}, please use version 2.5.8"
-  when: ansible_version.full != "2.5.8"
+    msg: "Detected ansible version is {{ ansible_version.full }}, please use 2.5.8 <= version <= 2.7.4"
+  when: ansible_version.full is version('2.7.4', '>') or ansible_version.full is version('2.5.8', '<')
 
 - name: Assume ProductDomainAdmin Role
   sts_assume_role:
@@ -54,7 +54,7 @@
 - name: Set Launch Configurations' Name
   set_fact:
     old_lc_name: "{{ asg.results[0].launch_configuration_name }}"
-    new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ service_version }}-{{ service_environment }}-{{ launch_configuration_name_suffix }}"
+    new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ service_version }}-{{ ami.images[0].image_id }}-{{ service_environment }}-{{ launch_configuration_name_suffix }}"
 
 - name: Find Old Launch Configuration
   ec2_lc_facts:
@@ -101,6 +101,7 @@
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
     security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
+    default_cooldown: "{{ asg_default_cooldown }}"
     name: "{{ asg_name }}"
     launch_config_name: "{{ new_lc_name }}"
     max_size: "{{ asg_max_size | default(asg.results[0].max_size) }}"
@@ -108,8 +109,9 @@
     desired_capacity: "{{ asg_desired_capacity | default(asg.results[0].desired_capacity) }}"
     health_check_type: "{{ asg_health_check_type | default(asg.results[0].health_check_type) }}"
     health_check_period: "{{ asg_health_check_grace_period | default(asg.results[0].health_check_grace_period) }}"
-    replace_all_instances: yes
+    replace_all_instances: true
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
+    wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
 
 - name: Delete the Old Launch Configuration
@@ -122,4 +124,4 @@
     state: absent
   when:
     - old_lc_name != new_lc_name
-    - old_lc_name | search("-" + launch_configuration_name_suffix + "$")
+    - old_lc_name is search("-" + launch_configuration_name_suffix + "$")
