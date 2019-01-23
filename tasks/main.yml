@@ -54,7 +54,7 @@
 - name: Set Launch Configurations Names
   set_fact:
     old_lc_name: "{{ asg.results[0].launch_configuration_name }}"
-    new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ ami.images[0].name }}-{{ service_environment }}-{{ launch_configuration_name_suffix }}"
+    new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ ami.images[0].name }}-{{ service_environment }}-{{ ansible_date_time.iso8601_basic_short }}-{{ launch_configuration_name_suffix }}"
 
 - name: Find the Old Launch Configuration
   ec2_lc_facts:
@@ -114,7 +114,6 @@
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
     wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
-    tags: "{{ asg.results[0].tags + [{ 'AmiId': ami.images[0].image_id, 'propagate_at_launch': 'yes' }] }}"
 
 - name: Delete the Old Launch Configuration
   ec2_lc:
