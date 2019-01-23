@@ -13,7 +13,7 @@
     role_session_name: "{{ (lookup('env', 'USER') + '@' + ansible_product_name + '.' + ansible_product_serial) | regex_replace('[^\\w+=,.@-]', '-')}}"
   register: assumed_role
 
-- name: Find AMI
+- name: Find the AMI
   ec2_ami_facts:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
@@ -22,17 +22,17 @@
     image_id: "{{ ami_id }}"
   register: ami
 
-- name: AMI Found
+- name: The AMI is Found
   debug:
     msg: "{{ ami.images }}"
     verbosity: 3
 
-- name: Error When Finding the AMI
+- name: Fail If the AMI Is Not Found
   fail:
     msg: "Got {{ ami.images|length }} ami, expected 1. Please check `ami_id` parameter."
   when: ami.images|length != 1
 
-- name: Find ASG
+- name: Find the ASG
   ec2_asg_facts:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
@@ -41,22 +41,22 @@
     name: "{{ asg_name }}"
   register: asg
 
-- name: ASG Found
+- name: The ASG Is Found
   debug:
     msg: "{{ asg.results }}"
     verbosity: 3
 
-- name: Error When Finding the ASG
+- name: Fail If the ASG Is Not Found
   fail:
     msg: "Got {{ asg.results|length }} asg, expected 1. Please check `asg_name` parameter."
   when: asg.results|length != 1
 
-- name: Set Launch Configurations' Name
+- name: Set Launch Configurations Names
   set_fact:
     old_lc_name: "{{ asg.results[0].launch_configuration_name }}"
-    new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ service_version }}-{{ ami.images[0].image_id }}-{{ service_environment }}-{{ launch_configuration_name_suffix }}"
+    new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ ami.images[0].name }}-{{ service_environment }}-{{ ansible_date_time.iso8601_basic_short }}-{{ launch_configuration_name_suffix }}"
 
-- name: Find Old Launch Configuration
+- name: Find the Old Launch Configuration
   ec2_lc_facts:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
@@ -65,12 +65,12 @@
     name: "{{ old_lc_name }}"
   register: old_lc
 
-- name: Launch Configuration Found
+- name: The Old Launch Configuration Is Found
   debug:
     msg: "{{ old_lc.launch_configurations }}"
     verbosity: 3
 
-- name: Error When Finding the Old Launch Configuration
+- name: Fail If the AMI Is Not Found
   fail:
     msg: "Got {{ old_lc.launch_configurations|length }} lc, expected 1."
   when: old_lc.launch_configurations|length != 1
