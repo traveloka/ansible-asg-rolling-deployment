@@ -13,7 +13,7 @@
     role_session_name: "{{ (lookup('env', 'USER') + '@' + ansible_product_name + '.' + ansible_product_serial) | regex_replace('[^\\w+=,.@-]', '-')}}"
   register: assumed_role
 
-- name: Find the AMI
+- name: Get the AMI
   ec2_ami_facts:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
@@ -32,7 +32,7 @@
     msg: "Got {{ ami.images|length }} ami, expected 1. Please check `ami_id` parameter."
   when: ami.images|length != 1
 
-- name: Find the ASG
+- name: Get the ASG
   ec2_asg_facts:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
@@ -51,12 +51,21 @@
     msg: "Got {{ asg.results|length }} asg, expected 1. Please check `asg_name` parameter."
   when: asg.results|length != 1
 
-- name: Set Launch Configurations Names
+- name: Get Old Launch Configuration Name
   set_fact:
     old_lc_name: "{{ asg.results[0].launch_configuration_name }}"
-    new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ ami.images[0].name }}-{{ service_environment }}-{{ ansible_date_time.iso8601_basic_short }}-{{ launch_configuration_name_suffix }}"
 
-- name: Find the Old Launch Configuration
+- name: Set Always-Rolling Launch Configuration Name
+  set_fact:
+    new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ ami.images[0].name }}-{{ service_environment }}-{{ ansible_date_time.iso8601_basic_short }}-{{ launch_configuration_name_suffix }}"
+  when: always_roll == True
+
+- name: Set Idempotent Launch Configuration Name
+  set_fact:
+    new_lc_name: "{{ asg.results[0].launch_configuration_name }}"
+  when: always_roll == False
+
+- name: Get the Old Launch Configuration
   ec2_lc_facts:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
@@ -70,7 +79,7 @@
     msg: "{{ old_lc.launch_configurations }}"
     verbosity: 3
 
-- name: Fail If the AMI Is Not Found
+- name: Fail If the Old Launch Configuration Is Not Found
   fail:
     msg: "Got {{ old_lc.launch_configurations|length }} lc, expected 1."
   when: old_lc.launch_configurations|length != 1
@@ -103,7 +112,7 @@
     region: "{{ aws_region }}"
     default_cooldown: "{{ asg_default_cooldown }}"
     name: "{{ asg_name }}"
-    metrics_collection: yes
+    metrics_collection: "{{ asg_metrics_collection }}"
     launch_config_name: "{{ new_lc_name }}"
     max_size: "{{ asg_max_size | default(asg.results[0].max_size) }}"
     min_size: "{{ asg_min_size | default(asg.results[0].min_size) }}"
