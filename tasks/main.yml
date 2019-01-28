@@ -55,15 +55,15 @@
   set_fact:
     old_lc_name: "{{ asg.results[0].launch_configuration_name }}"
 
-- name: Set Always-Rolling Launch Configuration Name
+- name: Set New Launch Configuration Name
   set_fact:
     new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ ami.images[0].name }}-{{ service_environment }}-{{ ansible_date_time.iso8601_basic_short }}-{{ launch_configuration_name_suffix }}"
-  when: always_roll == True
+  when: replace_new_instances == True
 
-- name: Set Idempotent Launch Configuration Name
+- name: Reinstante Current Launch Configuration Name
   set_fact:
     new_lc_name: "{{ asg.results[0].launch_configuration_name }}"
-  when: always_roll == False
+  when: replace_new_instances == False
 
 - name: Get the Old Launch Configuration
   ec2_lc_facts:
