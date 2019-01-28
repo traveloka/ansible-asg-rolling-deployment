@@ -112,7 +112,7 @@
     region: "{{ aws_region }}"
     default_cooldown: "{{ asg_default_cooldown }}"
     name: "{{ asg_name }}"
-    metrics_collection: "{{ asg_metrics_collection }}"
+    metrics_collection: "{{ asg_metrics_collection | default(omit) }}"
     launch_config_name: "{{ new_lc_name }}"
     max_size: "{{ asg_max_size | default(asg.results[0].max_size) }}"
     min_size: "{{ asg_min_size | default(asg.results[0].min_size) }}"
