@@ -60,7 +60,7 @@
     new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ ami.images[0].name }}-{{ service_environment }}-{{ ansible_date_time.iso8601_basic_short }}-{{ launch_configuration_name_suffix }}"
   when: replace_new_instances
 
-- name: Reinstante Current Launch Configuration Name
+- name: Reinstate Current Launch Configuration Name
   set_fact:
     new_lc_name: "{{ asg.results[0].launch_configuration_name }}"
   when: not replace_new_instances
@@ -84,7 +84,7 @@
     msg: "Got {{ old_lc.launch_configurations|length }} lc, expected 1."
   when: old_lc.launch_configurations|length != 1
 
-- name: Create New Launch Configuration
+- name: State the Launch Configuration
   ec2_lc:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
