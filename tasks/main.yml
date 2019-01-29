@@ -29,7 +29,7 @@
 
 - name: Fail If the AMI Is Not Found
   fail:
-    msg: "Got {{ ami.images|length }} ami, expected 1. Please check `ami_id` parameter."
+    msg: "Got {{ ami.images|length }} AMI(s), expected 1. Please check `ami_id` parameter."
   when: ami.images|length != 1
 
 - name: Get the ASG
@@ -58,12 +58,12 @@
 - name: Set New Launch Configuration Name
   set_fact:
     new_lc_name: "{{ service_name }}-{{ cluster_role }}-{{ ami.images[0].name }}-{{ service_environment }}-{{ ansible_date_time.iso8601_basic_short }}-{{ launch_configuration_name_suffix }}"
-  when: replace_new_instances == True
+  when: replace_new_instances
 
 - name: Reinstante Current Launch Configuration Name
   set_fact:
     new_lc_name: "{{ asg.results[0].launch_configuration_name }}"
-  when: replace_new_instances == False
+  when: not replace_new_instances
 
 - name: Get the Old Launch Configuration
   ec2_lc_facts:
