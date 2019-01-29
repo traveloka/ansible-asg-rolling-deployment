@@ -1,8 +1,8 @@
 ---
 - name: Check Ansible Version
   fail:
-    msg: "Detected ansible version is {{ ansible_version.full }}, please use 2.5.8 <= version <= 2.7.4"
-  when: ansible_version.full is version('2.7.4', '>') or ansible_version.full is version('2.5.8', '<')
+    msg: "Detected ansible version is {{ ansible_version.full }}, please use ansible v2.5.x"
+  when: ansible_version.full is version('2.5.14', '>') or ansible_version.full is version('2.5.0', '<')
 
 - name: Assume ProductDomainAdmin Role
   sts_assume_role:
