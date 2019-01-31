@@ -94,6 +94,7 @@
     image_id: "{{ ami.images[0].image_id }}"
     instance_type: "{{ instance_type | default(old_lc.launch_configurations[0].instance_type) }}"
     instance_profile_name: "{{ old_lc.launch_configurations[0].iam_instance_profile }}"
+    key_name: "{{ old_lc.launch_configurations[0].key_name | default(omit, true) }}"
     security_groups: "{{ old_lc.launch_configurations[0].security_groups }}"
     user_data: "{{ instance_user_data }}"
     instance_monitoring: "{{ old_lc.launch_configurations[0].instance_monitoring.enabled }}"
