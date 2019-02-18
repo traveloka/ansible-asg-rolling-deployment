@@ -10,7 +10,7 @@
     mfa_serial_number: "{{ aws_mfa_serial | default(omit) }}"
     mfa_token: "{{ aws_mfa_token | default(omit) }}"
     region: "{{ aws_region }}"
-    role_session_name: "{{ (lookup('env', 'USER') + ansible_product_serial) | regex_replace('[^\\w+=,.@-]', '-')}}"
+    role_session_name: "{{ (lookup('env', 'USER')) | regex_replace('[^\\w+=,.@-]', '-')}}"
   register: assumed_role
 
 - name: Get the AMI
