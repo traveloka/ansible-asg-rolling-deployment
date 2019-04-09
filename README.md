@@ -47,12 +47,6 @@ Requirements mentioned above are based on these modules which are used in this r
 
 ### Required Variables ###
 
-    - name: aws_pda_role_arn
-      description: The Amazon Resource Name (ARN) of ProductDomainAdmin role that the caller is assuming.
-    - name: aws_mfa_serial
-      description: The identification number of the MFA device that is associated with the user who is making the AssumeRole call.
-    - name: aws_mfa_token
-      description: The value provided by the MFA device.
     - name: aws_region
       description: The AWS region to use.
     - name: ami_id
@@ -105,8 +99,6 @@ Requirements mentioned above are based on these modules which are used in this r
     instance_count: 1
   roles:
     - role: ansible-blue_green-lc-deploy
-      aws_pda_role_arn: arn:aws:iam::123456789012:role/ProductDomainAdmin
-      aws_mfa_serial: arn:aws:iam::123456789012:mfa/rafi.putra
       aws_region: ap-southeast-1
 
       service_name: tsiasg
@@ -116,7 +108,7 @@ Requirements mentioned above are based on these modules which are used in this r
 
       ami_id: ami-0a1b2c3d4e5f67890
 
-      asg_name: tsiasg-app-7e44f6f512903a59
+      asg_name: tsiasg-app-abcdef0123456789
       asg_min_size: "{{ instance_count }}"
       asg_max_size: "{{ instance_count }}"
       asg_desired_capacity: "{{ instance_count }}"
@@ -124,7 +116,7 @@ Requirements mentioned above are based on these modules which are used in this r
       instance_user_data: |
         #cloud-config
         bootcmd:
-        - JAVA_OPTS="{{ app_memory_java_opts }}" TRAVELOKA_ENV="production" /etc/init.d/supervisor start
+        - echo "succeed"
         runcmd:
         - /opt/init/init-instance /dummy/data/dd.key
 ```
