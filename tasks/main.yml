@@ -4,20 +4,8 @@
     msg: "Detected ansible version is {{ ansible_version.full }}, please use ansible v2.5.x"
   when: ansible_version.full is version('2.5.14', '>') or ansible_version.full is version('2.5.0', '<')
 
-- name: Assume ProductDomainAdmin Role
-  sts_assume_role:
-    role_arn: "{{ aws_pda_role_arn }}"
-    mfa_serial_number: "{{ aws_mfa_serial | default(omit) }}"
-    mfa_token: "{{ aws_mfa_token | default(omit) }}"
-    region: "{{ aws_region }}"
-    role_session_name: "{{ (lookup('env', 'USER')) | regex_replace('[^\\w+=,.@-]', '-')}}"
-  register: assumed_role
-
 - name: Get the AMI
   ec2_ami_facts:
-    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-    security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
     image_id: "{{ ami_id }}"
   register: ami
@@ -34,9 +22,6 @@
 
 - name: Get the ASG
   ec2_asg_facts:
-    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-    security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
     name: "{{ asg_name }}"
   register: asg
@@ -67,9 +52,6 @@
 
 - name: Get the Old Launch Configuration
   ec2_lc_facts:
-    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-    security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
     name: "{{ old_lc_name }}"
   register: old_lc
@@ -86,9 +68,6 @@
 
 - name: State the Launch Configuration
   ec2_lc:
-    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-    security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
     name: "{{ new_lc_name }}"
     image_id: "{{ ami.images[0].image_id }}"
@@ -107,9 +86,6 @@
 
 - name: Update the ASG
   ec2_asg:
-    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-    security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
     default_cooldown: "{{ asg_default_cooldown }}"
     name: "{{ asg_name }}"
@@ -126,9 +102,6 @@
 
 - name: Delete the Old Launch Configuration
   ec2_lc:
-    aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-    aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-    security_token: "{{ assumed_role.sts_creds.session_token }}"
     region: "{{ aws_region }}"
     name: "{{ old_lc_name }}"
     state: absent
