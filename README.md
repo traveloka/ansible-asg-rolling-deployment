@@ -63,8 +63,6 @@ Requirements mentioned above are based on these modules which are used in this r
       description: The name of the service.
     - name: cluster_role
       description: The role/function of the cluster.
-    - name: service_version
-      description: The version of the service. This will be added as part of the Launch Configuration name. You have to replace this value each time you release new software / use new AMI.
     - name: service_environment
       description: The environment of this service belongs to.
     - name: instance_user_data
@@ -111,7 +109,6 @@ Requirements mentioned above are based on these modules which are used in this r
 
       service_name: tsiasg
       cluster_role: app
-      service_version: 0.1.0
       service_environment: production
 
       ami_id: ami-0a1b2c3d4e5f67890
