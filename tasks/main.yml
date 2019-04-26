@@ -99,6 +99,7 @@
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
     wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
+    termination_policies: "{{ asg_termination_policies }}"
 
 - name: Delete the Old Launch Configuration
   ec2_lc:

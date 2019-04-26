@@ -76,6 +76,8 @@ Requirements mentioned above are based on these modules which are used in this r
       description: Controls how health checking is done, if unspecified then the current group value will be used.
     - name: asg_health_check_grace_period
       description: Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health, if unspecified then the current group value will be used.
+    - name: asg_termination_policies
+      description: An ordered list of criteria used for selecting instances to be removed from the Auto Scaling group when reducing capacity. When used to change an existent autoscaling group, the current termination policies are maintained.
     - name: instance_type
       description: The type of the istance to launch in ASG, if unspecified then the current group value will be used.
 
