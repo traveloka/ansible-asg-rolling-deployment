@@ -101,16 +101,8 @@
     wait_timeout: "{{ asg_wait_timeout }}"
     tags:
       - AmiId: "{{ ami_id }}"
-      - Application: "{{ ami.images.name.split('/')[3].split('-')[0:2] | join('-') }}"
-      - Cluster: "{{ service_name }}-{{ cluster_role }}"
-      - Creator: "Autoscaling"
-      - Description: "Autoscaling group for {{ service_name }}-{{ cluster_role }}"
-      - Environment: "{{ 'production' if service_environment == 'prod' else 'staging' }}"
       - ManagedBy: "terraform"
       - Name: "{{ asg_name }}"
-      - ProductDomain: "{{ service_name[0:3] }}"
-      - Service: "{{ service_name }}"
-      - AutoScalingGroupName: "{{ asg_name }}"
         propogate_on_launch: true
 
 - name: Delete the Old Launch Configuration
