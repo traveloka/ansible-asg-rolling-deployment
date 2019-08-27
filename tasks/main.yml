@@ -148,7 +148,7 @@
     wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
   when:
-      - canary_release_count <= 0
+    - canary_release_count <= 0
 
 - name: Delete the Old Launch Configuration
   ec2_lc:
