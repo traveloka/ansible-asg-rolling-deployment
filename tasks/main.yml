@@ -66,6 +66,34 @@
     msg: "Got {{ old_lc.launch_configurations|length }} lc, expected 1."
   when: old_lc.launch_configurations|length != 1
 
+- name: Fail If the ASG instance count less than canary release count
+  fail:
+    msg: "Got {{ asg.results[0].instances|length }} instance, expected greater than {{ canary_release_count }}. Please check `asg_name` parameter."
+  when:
+    - canary_release_count > 0
+    - asg.results[0].instances|length < canary_release_count
+
+- name: Create list of instances in current ASG
+  set_fact:
+    instance_list : "{{ instance_list | default([]) + [ item.instance_id ] }}"
+  with_items: "{{ asg.results[0].instances }}"
+  when:
+    - canary_release_count > 0
+
+- name: Current instance ids in ASG
+  debug:
+    msg: "{{ instance_list }}"
+    verbosity: 3
+  when:
+    - canary_release_count > 0
+
+- name: Canary release instance ids that will be updated with new AMI
+  debug:
+    msg: "{{ instance_list[0:canary_release_count] }}"
+    verbosity: 3
+  when:
+    - canary_release_count > 0
+
 - name: State the Launch Configuration
   ec2_lc:
     region: "{{ aws_region }}"
@@ -84,7 +112,27 @@
       volume_type: "{{ ebs_volume_type }}"
       delete_on_termination: "{{ ebs_delete_on_termination }}"
 
-- name: Update the ASG
+- name: Canary update the ASG
+  ec2_asg:
+    region: "{{ aws_region }}"
+    default_cooldown: "{{ asg_default_cooldown }}"
+    name: "{{ asg_name }}"
+    launch_config_name: "{{ new_lc_name }}"
+    max_size: "{{ asg_max_size | default(asg.results[0].max_size) }}"
+    min_size: "{{ asg_min_size | default(asg.results[0].min_size) }}"
+    desired_capacity: "{{ asg_desired_capacity | default(asg.results[0].desired_capacity) }}"
+    health_check_type: "{{ asg_health_check_type | default(asg.results[0].health_check_type) }}"
+    health_check_period: "{{ asg_health_check_grace_period | default(asg.results[0].health_check_grace_period) }}"
+    replace_all_instances: false
+    replace_instances: "{{ instance_list[0:canary_release_count] }}"
+    wait_for_instances: "{{ asg_wait_for_instances }}"
+    wait_timeout: "{{ asg_wait_timeout }}"
+    tags: "{{ asg_tags }}"
+  when:
+    - canary_release_count > 0
+
+
+- name: Update full ASG
   ec2_asg:
     region: "{{ aws_region }}"
     default_cooldown: "{{ asg_default_cooldown }}"
@@ -99,6 +147,8 @@
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
     wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
+  when:
+      - canary_release_count <= 0
 
 - name: Delete the Old Launch Configuration
   ec2_lc:
