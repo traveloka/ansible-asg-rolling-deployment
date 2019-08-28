@@ -66,11 +66,6 @@
     msg: "Got {{ old_lc.launch_configurations|length }} lc, expected 1."
   when: old_lc.launch_configurations|length != 1
 
-- name: Set canary release count variable for backward compatibility
-  set_fact:
-    canary_release_count: 0
-  when: canary_release_count is not defined
-
 - name: Fail If the ASG instance count less than canary release count
   fail:
     msg: "Got {{ asg.results[0].instances|length }} instance, expected greater than {{ canary_release_count }}. Please check `asg_name` parameter."
