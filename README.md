@@ -44,6 +44,9 @@ Requirements mentioned above are based on these modules which are used in this r
     - name: launch_configuration_name_suffix
       description: Suffix that will be added to Launch Configurations which are going to be created and deleted by this role.
       value: rolling
+    - name: canary_release_count
+      description: No of instance to be updated with new AMI for canary release (Should be less than ASG size) .
+      value: 0
 
 ### Required Variables ###
 
@@ -83,7 +86,7 @@ Requirements mentioned above are based on these modules which are used in this r
 
  - The AWS EC2 ASG is already provisioned
 
-## Example Playbook ##
+## Example Playbook For Full Deployment ##
 
 
 ```
@@ -109,7 +112,56 @@ Requirements mentioned above are based on these modules which are used in this r
       asg_min_size: "{{ instance_count }}"
       asg_max_size: "{{ instance_count }}"
       asg_desired_capacity: "{{ instance_count }}"
-            
+
+      canary_release_count: 0
+
+      # Set this to false if you have done canary release
+      # for AMI version for optimal instance cost.
+      # Setting this to true with canary release already done
+      # will relaunch the new instances again with same AMI.
+      replace_new_instances: false
+
+      instance_user_data: |
+        #cloud-config
+        bootcmd:
+        - echo "succeed"
+        runcmd:
+        - /opt/init/init-instance /dummy/data/dd.key
+```
+
+## Example Playbook For Canary Deployment ##
+
+
+```
+---
+- hosts: localhost
+  connection: local
+  vars:
+    # set common_java_opts in supervisor using the ami baking playbook!
+    app_memory_java_opts: >-
+      -Xms1g -Xmx1g -XX:PermSize=512m -XX:MaxPermSize=512m
+    instance_count: 1
+  roles:
+    - role: ansible-blue_green-lc-deploy
+      aws_region: ap-southeast-1
+
+      service_name: tsiasg
+      cluster_role: app
+      service_environment: production
+
+      ami_id: ami-0a1b2c3d4e5f67890
+
+      asg_name: tsiasg-app-abcdef0123456789
+      asg_min_size: "{{ instance_count }}"
+      asg_max_size: "{{ instance_count }}"
+      asg_desired_capacity: "{{ instance_count }}"
+
+      # Canary release count should be less than ASG
+      # instance size, otherwise deployment will fail.
+      canary_release_count: 3
+
+      replace_new_instances: false
+
       instance_user_data: |
         #cloud-config
         bootcmd:
