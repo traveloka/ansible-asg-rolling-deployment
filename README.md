@@ -160,7 +160,7 @@ Requirements mentioned above are based on these modules which are used in this r
       # instance size, otherwise deployment will fail.
       canary_release_count: 3
 
-      replace_new_instances: false
+      replace_new_instances: true
 
       instance_user_data: |
         #cloud-config
