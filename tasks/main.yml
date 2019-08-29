@@ -84,6 +84,30 @@
       volume_type: "{{ ebs_volume_type }}"
       delete_on_termination: "{{ ebs_delete_on_termination }}"
 
+- name: Set ASG tags list to empty array.
+  set_fact:
+    asg_tags: []
+
+- name: Gather ASG tags
+  set_fact:
+    asg_tags: "{{ asg_tags + [ { item.key: item.value } ] }}"
+  with_items: "{{ asg.results[0].tags }}"
+  when:
+    - item.key != "AmiId"
+    - item.key != "ManagedBy"
+
+- name: Update deployment related tags
+  set_fact:
+    asg_tags: "{{ asg_tags | default([]) + [ { item.key: item.value } ] }}"
+  with_items:
+    - { key: "AmiId", value: "{{ ami_id }}" }
+    - { key: "ManagedBy", value: "ansible" }
+
+- name: The Final tags to be updated to ASG
+  debug:
+    msg: "{{ asg_tags }}"
+    verbosity: 3
+
 - name: Update the ASG
   ec2_asg:
     region: "{{ aws_region }}"
@@ -99,6 +123,7 @@
     replace_batch_size: "{{ asg_replace_batch_size | default(omit) }}"
     wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
+    tags: "{{ asg_tags }}"
 
 - name: Delete the Old Launch Configuration
   ec2_lc:
