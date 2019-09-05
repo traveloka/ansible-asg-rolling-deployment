@@ -2,7 +2,7 @@
 - name: Check Ansible Version
   fail:
     msg: "Detected ansible version is {{ ansible_version.full }}, please use ansible v2.5.x"
-  when: ansible_version.full is version('2.5.14', '>') or ansible_version.full is version('2.5.0', '<')
+  when: ansible_version.full is version('2.5.15', '>') or ansible_version.full is version('2.5.0', '<')
 
 - name: Get the AMI
   ec2_ami_facts:
