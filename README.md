@@ -45,8 +45,11 @@ Requirements mentioned above are based on these modules which are used in this r
       description: Suffix that will be added to Launch Configurations which are going to be created and deleted by this role.
       value: rolling
     - name: canary_release_count
-      description: No of instance to be updated with new AMI for canary release (Should be less than ASG size) .
+      description: No of instance to be updated automatically with new AMI for canary release (Should be strictly less than ASG size) .
       value: 0
+    - name: replace_instances
+      description: Instance ids to be updated manually with new AMI for canary release (Should be strictly less than ASG size) .
+      value: []
 
 ### Required Variables ###
 
@@ -95,7 +98,7 @@ Requirements mentioned above are based on these modules which are used in this r
   connection: local
   vars:
     # set common_java_opts in supervisor using the ami baking playbook!
-    app_memory_java_opts: >- 
+    app_memory_java_opts: >-
       -Xms1g -Xmx1g -XX:PermSize=512m -XX:MaxPermSize=512m
     instance_count: 1
   roles:
@@ -114,6 +117,8 @@ Requirements mentioned above are based on these modules which are used in this r
       asg_desired_capacity: "{{ instance_count }}"
 
       canary_release_count: 0
+
+      replace_instances: []
 
       # Set this to false if you have done canary release
       # for AMI version for optimal instance cost.
@@ -158,7 +163,16 @@ Requirements mentioned above are based on these modules which are used in this r
 
       # Canary release count should be less than ASG
       # instance size, otherwise deployment will fail.
+      # If canary_release_count > 0 then replace_instances should not be used.
+      # Both variables cannot be used at same time
       canary_release_count: 3
+
+      # Set this to instance ids to be replaced in canary release.
+      # No of instances should be strictly less than instance count in ASG.
+      # Incorrect instance ids will result in failed deployment.
+      # If replace_instances size > 0, canary_release_count should not be used.
+      # Both variables cannot be used at same time
+      replace_instances: ["i-97593jjeief8488", "i-97593juoo98"]
 
       replace_new_instances: true
 

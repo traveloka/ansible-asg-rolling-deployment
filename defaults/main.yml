@@ -9,3 +9,4 @@ ebs_delete_on_termination: true
 launch_configuration_name_suffix: rolling
 replace_new_instances: true
 canary_release_count: 0
+replace_instances: []
