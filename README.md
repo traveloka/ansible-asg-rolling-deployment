@@ -47,7 +47,7 @@ Requirements mentioned above are based on these modules which are used in this r
     - name: canary_release_count
       description: No of instance to be updated automatically with new AMI for canary release (Should be strictly less than ASG size) .
       value: 0
-    - name: replace_instances
+    - name: canary_release_instance_ids
       description: Instance ids to be updated manually with new AMI for canary release (Should be strictly less than ASG size) .
       value: []
 
