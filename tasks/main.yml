@@ -6,16 +6,16 @@
 
 - name: Check if invalid canary release
   fail:
-    msg: "Got `replace_instances` and `canary_release_count` both set. Please use only 1 parameter at a time for canary release."
+    msg: "Got `canary_release_instance_ids` and `canary_release_count` both set. Please use only 1 parameter at a time for canary release."
   when:
-    - replace_instances|length > 0
+    - canary_release_instance_ids|length > 0
     - canary_release_count > 0
 
 - name: Set replace_new_instance to true for canary release
   set_fact:
     replace_new_instance: true
   when:
-    - replace_instances|length > 0 or canary_release_count > 0
+    - canary_release_instance_ids|length > 0 or canary_release_count > 0
 
 - name: Get the AMI
   ec2_ami_facts:
@@ -104,10 +104,10 @@
 
 - name: Fail If the ASG instance count equals manual canary release count
   fail:
-    msg: "Got {{ asg.results[0].instances|length }} instance in asg, and manual `replace_instances` length also same. Canary release should not replace all instances."
+    msg: "Got {{ asg.results[0].instances|length }} instance in asg, and manual `canary_release_instance_ids` length also same. Canary release should not replace all instances."
   when:
-    - replace_instances|length > 0
-    - asg.results[0].instances|length == replace_instances|length
+    - canary_release_instance_ids|length > 0
+    - asg.results[0].instances|length == canary_release_instance_ids|length
 
 
 - name: Create list of instances in current ASG
@@ -115,35 +115,35 @@
     instance_list : "{{ instance_list | default([]) + [ item.instance_id ] }}"
   with_items: "{{ asg.results[0].instances }}"
   when:
-    - canary_release_count > 0 or replace_instances|length > 0
+    - canary_release_count > 0 or canary_release_instance_ids|length > 0
 
 - name: Current instance ids in ASG
   debug:
     msg: "{{ instance_list }}"
     verbosity: 3
   when:
-    - canary_release_count > 0 or replace_instances|length > 0
+    - canary_release_count > 0 or canary_release_instance_ids|length > 0
 
 - name: Check for instances selected manually to be replaced
   fail:
     msg: "Cannot find instance id {{ item }} in asg {{ asg_name }}"
-  with_items: "{{ replace_instances }}"
+  with_items: "{{ canary_release_instance_ids }}"
   when:
-    - replace_instances|length > 0
+    - canary_release_instance_ids|length > 0
     - item not in instance_list
 
 - name: Random Instance Ids that will be replaced in canary release
   set_fact:
-    replace_instances : "{{ instance_list[0:canary_release_count] }}"
+    canary_release_instance_ids : "{{ instance_list[0:canary_release_count] }}"
   when:
     - canary_release_count > 0
 
 - name: Canary release instance ids that will be updated with new AMI
   debug:
-    msg: "{{ replace_instances }}"
+    msg: "{{ canary_release_instance_ids }}"
     verbosity: 3
   when:
-    - replace_instances|length > 0
+    - canary_release_instance_ids|length > 0
 
 
 - name: State the Launch Configuration
@@ -200,12 +200,12 @@
     health_check_type: "{{ asg_health_check_type | default(asg.results[0].health_check_type) }}"
     health_check_period: "{{ asg_health_check_grace_period | default(asg.results[0].health_check_grace_period) }}"
     replace_all_instances: false
-    replace_instances: "{{ replace_instances }}"
+    replace_instances: "{{ canary_release_instance_ids }}"
     wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
     tags: "{{ asg_tags }}"
   when:
-    - replace_instances|length > 0
+    - canary_release_instance_ids|length > 0
 
 - name: Update full ASG
   ec2_asg:
@@ -224,7 +224,7 @@
     wait_timeout: "{{ asg_wait_timeout }}"
     tags: "{{ asg_tags }}"
   when:
-    - replace_instances|length <= 0
+    - canary_release_instance_ids|length <= 0
 
 - name: List of old Launch Configurations to be deleted
   set_fact:

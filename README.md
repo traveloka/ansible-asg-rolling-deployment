@@ -118,7 +118,7 @@ Requirements mentioned above are based on these modules which are used in this r
 
       canary_release_count: 0
 
-      replace_instances: []
+      canary_release_instance_ids: []
 
       # Set this to false if you have done canary release
       # for AMI version for optimal instance cost.
@@ -163,16 +163,16 @@ Requirements mentioned above are based on these modules which are used in this r
 
       # Canary release count should be less than ASG
       # instance size, otherwise deployment will fail.
-      # If canary_release_count > 0 then replace_instances should not be used.
+      # If canary_release_count > 0 then canary_release_instance_ids should not be used.
       # Both variables cannot be used at same time
       canary_release_count: 3
 
       # Set this to instance ids to be replaced in canary release.
       # No of instances should be strictly less than instance count in ASG.
       # Incorrect instance ids will result in failed deployment.
-      # If replace_instances size > 0, canary_release_count should not be used.
+      # If canary_release_instance_ids size > 0, canary_release_count should not be used.
       # Both variables cannot be used at same time
-      replace_instances: ["i-97593jjeief8488", "i-97593juoo98"]
+      canary_release_instance_ids: ["i-97593jjeief8488", "i-97593juoo98"]
 
       replace_new_instances: true
 
