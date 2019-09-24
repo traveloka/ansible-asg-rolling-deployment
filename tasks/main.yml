@@ -152,6 +152,7 @@
     name: "{{ new_lc_name }}"
     image_id: "{{ ami.images[0].image_id }}"
     instance_type: "{{ instance_type | default(old_lc.launch_configurations[0].instance_type) }}"
+    spot_price: "{{ spot_price | default(old_lc.launch_configurations[0].spot_price) | default(omit) }}"
     instance_profile_name: "{{ old_lc.launch_configurations[0].iam_instance_profile }}"
     key_name: "{{ old_lc.launch_configurations[0].key_name | default(omit, true) }}"
     security_groups: "{{ old_lc.launch_configurations[0].security_groups }}"
