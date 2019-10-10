@@ -13,7 +13,7 @@
 
 - name: Set replace_new_instance to true for canary release
   set_fact:
-    replace_new_instance: true
+    replace_new_instances: true
   when:
     - canary_release_instance_ids|length > 0 or canary_release_count > 0
 
