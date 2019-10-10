@@ -81,8 +81,10 @@
 
 - name: Fail if replace_new_instances is false but AMI id is new
   fail:
-      msg: "Got replace_new_instances as false but AMI id doesn't match the current LC Ami id. Please use old AMI id or set replace_new_instances to true"
-  when: old_lc.launch_configurations[0].image_id != ami_id
+    msg: "Got replace_new_instances as false but AMI id doesn't match the current LC Ami id. Please use old AMI id or set replace_new_instances to true"
+  when:
+    - replace_new_instances != true
+    - old_lc.launch_configurations[0].image_id != ami_id
 
 - name: Find all launch configuration for service
   ec2_lc_find:
@@ -188,7 +190,7 @@
     msg: "{{ asg_tags }}"
     verbosity: 3
 
--- name: Canary update the ASG
+- name: Canary update the ASG
   ec2_asg:
     region: "{{ aws_region }}"
     default_cooldown: "{{ asg_default_cooldown }}"
@@ -199,7 +201,6 @@
     desired_capacity: "{{ asg_desired_capacity | default(asg.results[0].desired_capacity) }}"
     health_check_type: "{{ asg_health_check_type | default(asg.results[0].health_check_type) }}"
     health_check_period: "{{ asg_health_check_grace_period | default(asg.results[0].health_check_grace_period) }}"
-    replace_all_instances: false
     replace_instances: "{{ canary_release_instance_ids }}"
     wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
