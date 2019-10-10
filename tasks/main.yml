@@ -114,7 +114,7 @@
 
 - name: Create list of instances in current ASG
   set_fact:
-    instance_list : "{{ instance_list | default([]) + [ item.instance_id ] }}"
+    instance_list: "{{ instance_list | default([]) + [ item.instance_id ] }}"
   with_items: "{{ asg.results[0].instances }}"
   when:
     - canary_release_count > 0 or canary_release_instance_ids|length > 0
@@ -136,7 +136,7 @@
 
 - name: Random Instance Ids that will be replaced in canary release
   set_fact:
-    canary_release_instance_ids : "{{ instance_list[0:canary_release_count] }}"
+    canary_release_instance_ids: "{{ instance_list[0:canary_release_count] }}"
   when:
     - canary_release_count > 0
 
@@ -161,10 +161,10 @@
     instance_monitoring: "{{ old_lc.launch_configurations[0].instance_monitoring.enabled }}"
     ebs_optimized: "{{ old_lc.launch_configurations[0].ebs_optimized }}"
     volumes:
-    - device_name: "{{ ebs_device_name }}"
-      volume_size: "{{ ebs_volume_size }}"
-      volume_type: "{{ ebs_volume_type }}"
-      delete_on_termination: "{{ ebs_delete_on_termination }}"
+      - device_name: "{{ ebs_device_name }}"
+        volume_size: "{{ ebs_volume_size }}"
+        volume_type: "{{ ebs_volume_type }}"
+        delete_on_termination: "{{ ebs_delete_on_termination }}"
 
 - name: Set ASG tags list to empty array.
   set_fact:
@@ -229,7 +229,7 @@
 
 - name: List of old Launch Configurations to be deleted
   set_fact:
-    old_lc_to_delete : "{{ old_lc_to_delete | default([]) + [ item.name ] }}"
+    old_lc_to_delete: "{{ old_lc_to_delete | default([]) + [ item.name ] }}"
   with_items: "{{ all_lc.results }}"
   when:
     - item.name != new_lc_name
@@ -249,5 +249,5 @@
     state: absent
   with_items: "{{ old_lc_to_delete }}"
   when:
-   - old_lc_to_delete|length > 0
+    - old_lc_to_delete|length > 0
 
