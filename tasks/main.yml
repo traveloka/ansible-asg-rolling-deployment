@@ -188,7 +188,7 @@
     msg: "{{ asg_tags }}"
     verbosity: 3
 
--- name: Canary update the ASG
+- name: Canary update the ASG
   ec2_asg:
     region: "{{ aws_region }}"
     default_cooldown: "{{ asg_default_cooldown }}"
