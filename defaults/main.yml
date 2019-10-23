@@ -10,3 +10,4 @@ launch_configuration_name_suffix: rolling
 replace_new_instances: true
 canary_release_count: 0
 canary_release_instance_ids: []
+non_prod_monitoring: false
