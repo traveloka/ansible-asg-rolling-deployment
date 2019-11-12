@@ -1,8 +1,8 @@
 ---
 - name: Check Ansible Version
   fail:
-    msg: "Detected ansible version is {{ ansible_version.full }}, please use ansible v2.5.x"
-  when: ansible_version.full is version('2.5.15', '>') or ansible_version.full is version('2.5.0', '<')
+    msg: "Detected ansible version is {{ ansible_version.full }}, please use ansible version 2.5.0 <= v <= 3.0.0"
+  when: ansible_version.full is version('3.0.0', '>') or ansible_version.full is version('2.5.0', '<')
 
 - name: Check if invalid canary release
   fail:
