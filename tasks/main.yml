@@ -184,6 +184,7 @@
   with_items:
     - { key: "AmiId", value: "{{ ami_id }}" }
     - { key: "ManagedBy", value: "ansible" }
+    - { key: "nonprodmonitoring", value: "{{ non_prod_monitoring }}" }
 
 - name: The Final tags to be updated to ASG
   debug:
