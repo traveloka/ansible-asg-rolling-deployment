@@ -202,6 +202,7 @@
     health_check_type: "{{ asg_health_check_type | default(asg.results[0].health_check_type) }}"
     health_check_period: "{{ asg_health_check_grace_period | default(asg.results[0].health_check_grace_period) }}"
     replace_instances: "{{ canary_release_instance_ids }}"
+    lc_check: false
     wait_for_instances: "{{ asg_wait_for_instances }}"
     wait_timeout: "{{ asg_wait_timeout }}"
     tags: "{{ asg_tags }}"
